@@ -36,16 +36,19 @@ def predict():
     try:
         print("Received predict request:", request.get_json())
         data = request.get_json()
-        input_data = [
-            float(data['pregnancies']),
-            float(data['glucose']),
-            float(data['bloodPressure']),
-            float(data['skinThickness']),
-            float(data['insulin']),
-            float(data['bmi']),
-            float(data['diabetesPedigree']),
-            float(data['age'])
-        ]
+        # Validate and convert input data to floats
+        fields = ['pregnancies', 'glucose', 'bloodPressure', 'skinThickness', 'insulin', 'bmi', 'diabetesPedigree', 'age']
+        input_data = []
+        for field in fields:
+            if field not in data or data[field] is None or data[field] == '':
+                raise ValueError(f"Missing or empty field: {field}")
+            try:
+                value = float(data[field])
+                input_data.append(value)
+            except (ValueError, TypeError) as e:
+                print(f"Error converting field '{field}' to float: {data[field]}")
+                raise ValueError(f"Invalid value for {field}: {data[field]}. Must be a number.")
+
         prediction = model.predict([input_data])[0]
         result = 'High Risk' if prediction == 1 else 'Low Risk'
 
@@ -61,10 +64,10 @@ def predict():
         return jsonify(response)
     except (KeyError, ValueError) as e:
         print("Error in predict:", str(e))
-        return jsonify({'error': 'Invalid input data. All fields must be numbers.'}), 400
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
         print("Unexpected error in predict:", str(e))
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/history', methods=['GET'])
 def get_history():
