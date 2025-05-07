@@ -10,7 +10,7 @@ from io import BytesIO
 from bson import ObjectId
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}})  # Allow all origins for now, will update later
+CORS(app, resources={r"/api/*": {"origins": "https://predictwell-frontend.onrender.com"}})  # Allow all origins for now, will update later
 
 # MongoDB Configuration
 mongo_uri = os.getenv('MONGO_URI', 'mongodb://localhost:27017/predictwell')
