@@ -30,13 +30,19 @@ import React, { useState } from 'react';
       setResult(null);
       try {
         const response = await axios.post('https://predictwell-backend.onrender.com/api/predict', formData, {
-          timeout: 30000, // 30-second timeout to handle Render spin-up
+          timeout: 45000, // Increase to 45 seconds to handle Render spin-up
         });
         setResult(response.data.result);
         setPredictionId(response.data.id);
       } catch (error) {
         console.error('Prediction error:', error);
-        setError(error.response?.data?.error || 'Failed to get prediction. Please try again later.');
+        if (error.code === 'ECONNABORTED') {
+          setError('Request timed out. The server might be starting up. Please try again in a few seconds.');
+        } else if (error.response) {
+          setError(error.response.data.error || 'Failed to get prediction. Please try again later.');
+        } else {
+          setError('Network error. Please check your connection and try again.');
+        }
       } finally {
         setLoading(false);
       }
@@ -135,7 +141,7 @@ import React, { useState } from 'react';
           </Grid>
           {loading && (
             <Typography align="center" sx={{ mt: 3, color: '#1976D2' }}>
-              Processing your prediction... Please wait.
+              Processing your prediction... This may take a few seconds if the server is starting up.
             </Typography>
           )}
           {result && (
